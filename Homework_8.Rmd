@@ -1,0 +1,121 @@
+---
+title: "Homework 8"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+UT EID: kt27955
+Github Link: https://github.com/ktaspa/Homework8SDS315
+
+## Problem 1: Regression Warm-Up
+
+### A)
+
+We fit a linear regression model with creatclear as the response and age
+as the predictor. Then with the model we get the value 113.723 for the
+creatinine clearance rate we expect for a 55-year-old.
+
+```{r, echo = FALSE}
+creatinine <- read.csv("creatinine.csv")
+model <- lm(creatclear ~ age, data = creatinine)
+predict(model, newdata = data.frame(age = 55))
+```
+### B)
+
+The rate of change of creatinine clearance is negative so it decreases
+with age. We get the slope of the linear regression.
+
+```{r, echo = FALSE}
+summary(model)$coefficients["age", "Estimate"]
+```
+### C)
+
+Compared the actual creatinine clearance rates of two patients to the
+expected values from the model and got the 40-year-old with a rate of
+135 having a higher creatinine clearance rate. Equation: observed -
+predicted is difference between the two groups.
+
+```{r, echo = FALSE}
+pred_40 <- predict(model, newdata = data.frame(age = 40))
+pred_60 <- predict(model, newdata = data.frame(age = 60))
+obs_40 <- 135
+obs_60 <- 112
+diff_40 <- obs_40 - pred_40
+diff_60 <- obs_60 - pred_60
+c(diff_40, diff_60)
+```
+
+## Problem 2: Modeling Disease Growth
+
+### 1.
+
+The growth rate is 0.183 and the doubling time is 3.8.\
+The growth rate confidence interval with 95% confidence is (0.162,
+0.204)\
+The doubling time confidence interval with 95% confidence is (3.4, 4.3)\
+Both intervals are positive and go not contain 0, meaning that both
+values are statistically significant.
+
+```{r, echo = FALSE}
+covid <- read.csv("covid.csv")
+italy <-subset(covid, country == "Italy")
+spain <-subset(covid, country == "Spain")
+
+italy_model <- lm(log(deaths) ~ days_since_first_death, data = italy)
+
+coef(italy_model)["days_since_first_death"]
+log(2) / (coef(italy_model)["days_since_first_death"])
+
+confint(italy_model)["days_since_first_death", ]
+log(2) / rev(confint(italy_model)["days_since_first_death", ])
+```
+### 2.
+
+The growth rate is 0.276 and the doubling time is 2.5.\
+The growth rate confidence interval with 95% confidence is (0.237,
+0.316)\
+The doubling time confidence interval with 95% confidence is (2.2,2.9)\
+Both intervals are positive and go not contain 0, meaning that both
+values are statistically significant.
+
+```{r, echo = FALSE}
+spain_model <- lm(log(deaths) ~ days_since_first_death, data = spain)
+
+coef(spain_model)["days_since_first_death"]
+log(2) / (coef(spain_model)["days_since_first_death"])
+
+confint(spain_model)["days_since_first_death", ]
+log(2) / rev(confint(spain_model)["days_since_first_death", ])
+```
+### 3.
+
+```{r, echo = FALSE, warning = FALSE}
+library(ggplot2)
+
+ggplot(covid, aes(x = days_since_first_death, y = deaths, color = country)) +
+  geom_line(size = 1.1) +
+  labs(
+    title = "Daily COVID-19 Deaths in Italy vs Spain",
+    x = "Days Since First Death",
+    y = "Number of Deaths",
+    color = "Country"
+  )
+```
+
+## Problem 3: Price Elasticity of Demand
+
+The price elasticity of milk is -1.619. To estimate the elasticity I used a model that compares the percent change in sales to the percent change in price and the slope of that line tells us the price elasticity.
+```{r, echo=FALSE}
+milk <- read.csv("milk.csv")
+milk$log_price <- log(milk$price)
+milk$log_sales <- log(milk$sales)
+
+elasticity_model <- lm(log_sales ~ log_price, data = milk)
+coef(elasticity_model)["log_price"]
+
+```
+Confidence interval done with confint at the 95% confidence level gave an interval of (-1.779, -1.458) the interval is all negative and does not contain 0 which means that the price lelasticity of milk is statistically significant. 
+```{r, echo = FALSE}
+confint(elasticity_model)["log_price", ]
+```
